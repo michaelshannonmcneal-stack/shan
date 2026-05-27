@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏎️ NFT Garage</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --pink:    #ff006e;
+      --purple:  #7b2fff;
+      --cyan:    #00d4ff;
+      --dark:    #04000a;
+      --panel:   rgba(8, 0, 18, 0.82);
+      --border:  rgba(255, 0, 110, 0.35);
+    }
+
+    body {
+      background: var(--dark);
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+    }
+
+    canvas { display: block; }
+
+    /* ── Loading Screen ─────────────────────────────────── */
+    #loading {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--dark);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      transition: opacity 0.6s ease;
+    }
+    #loading .ld-icon  { font-size: 52px; animation: spin 3s linear infinite; }
+    #loading .ld-title { font-size: 26px; letter-spacing: 6px; color: #fff; }
+    #loading .ld-sub   { font-size: 11px; letter-spacing: 4px; color: var(--pink); opacity: 0.7; margin-bottom: 20px; }
+    #loading .ld-track { width: 220px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; }
+    #loading .ld-fill  {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 10px var(--pink);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Car Info Panel (top-left) ──────────────────────── */
+    #car-info {
+      position: fixed; top: 24px; left: 24px; z-index: 10;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      min-width: 220px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 0 40px rgba(255, 0, 110, 0.1),
+                  inset 0 0 20px rgba(255, 0, 110, 0.04);
+      transition: border-color 0.4s ease;
+    }
+    #car-info .ci-label { font-size: 9px; letter-spacing: 3px; color: var(--pink); opacity: 0.75; margin-bottom: 4px; }
+    #car-info .ci-name  { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    #car-info .ci-badge {
+      display: inline-block; padding: 3px 12px;
+      border-radius: 20px; font-size: 10px; letter-spacing: 1.5px;
+      font-weight: 600; text-transform: uppercase;
+      margin-bottom: 12px; border: 1px solid transparent;
+    }
+    #car-info .ci-id { font-size: 11px; color: rgba(255,255,255,0.3); }
+    #car-info .ci-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 10px; padding: 4px 8px;
+      background: rgba(255,255,255,0.05); border-radius: 6px;
+      font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 1px;
+    }
+    #car-tag-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+    /* ── Title Badge (top-right) ────────────────────────── */
+    #title-badge {
+      position: fixed; top: 24px; right: 24px; z-index: 10;
+      text-align: right; pointer-events: none;
+    }
+    #title-badge .tb-main {
+      font-size: 30px; font-weight: 900; letter-spacing: 3px;
+      background: linear-gradient(135deg, #fff 30%, var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    #title-badge .tb-sub {
+      font-size: 10px; letter-spacing: 4px;
+      color: var(--pink); opacity: 0.6;
+    }
+
+    /* ── Navigation Bar (bottom-center) ─────────────────── */
+    #nav {
+      position: fixed; bottom: 36px; left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .nav-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--pink); font-size: 22px;
+      cursor: pointer; backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+    .nav-btn:hover {
+      background: rgba(255, 0, 110, 0.15);
+      border-color: var(--pink);
+      box-shadow: 0 0 20px rgba(255, 0, 110, 0.35);
+      transform: scale(1.08);
+    }
+    .nav-btn:active { transform: scale(0.95); }
+
+    #dots { display: flex; align-items: center; gap: 8px; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.18);
+      cursor: pointer; transition: all 0.3s ease;
+    }
+    .dot.active {
+      width: 26px; background: var(--pink);
+      box-shadow: 0 0 12px var(--pink);
+    }
+    .dot:hover:not(.active) { background: rgba(255,255,255,0.4); }
+
+    /* ── Controls hint (bottom-right) ───────────────────── */
+    #hint {
+      position: fixed; bottom: 24px; right: 24px; z-index: 10;
+      font-size: 10px; letter-spacing: 1px;
+      color: rgba(255,255,255,0.2); line-height: 2;
+      text-align: right; pointer-events: none;
+    }
+
+    /* ── GLB source indicator (top-center) ──────────────── */
+    #glb-status {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      padding: 5px 14px; border-radius: 20px;
+      font-size: 10px; letter-spacing: 2px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--panel); backdrop-filter: blur(10px);
+      transition: all 0.4s ease; opacity: 0;
+    }
+    #glb-status.show { opacity: 1; }
+    #glb-status.real   { border-color: rgba(0,255,157,0.5); color: #00ff9d; }
+    #glb-status.fallback { border-color: rgba(255,200,0,0.4); color: #ffd700; }
+  </style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading">
+  <div class="ld-icon">🏎️</div>
+  <div class="ld-title">NFT GARAGE</div>
+  <div class="ld-sub">LOADING COLLECTION</div>
+  <div class="ld-track"><div class="ld-fill" id="ld-bar"></div></div>
+</div>
+
+<!-- Car Info Panel -->
+<div id="car-info">
+  <div class="ci-label">NFT Vehicle</div>
+  <div class="ci-name" id="ci-name">—</div>
+  <div class="ci-badge" id="ci-badge">—</div>
+  <div class="ci-id" id="ci-id">Token #—</div>
+  <div class="ci-tag">
+    <span id="car-tag-dot"></span>
+    <span id="ci-source">PROCEDURAL</span>
+  </div>
+</div>
+
+<!-- Title Badge -->
+<div id="title-badge">
+  <div class="tb-main">GARAGE</div>
+  <div class="tb-sub">NFT COLLECTION</div>
+</div>
+
+<!-- GLB Status -->
+<div id="glb-status"></div>
+
+<!-- Navigation -->
+<div id="nav">
+  <button class="nav-btn" id="prev-btn" title="Previous (←)">&#8249;</button>
+  <div id="dots"></div>
+  <button class="nav-btn" id="next-btn" title="Next (→)">&#8250;</button>
+</div>
+
+<!-- Controls Hint -->
+<div id="hint">
+  Drag · orbit &nbsp;|&nbsp; Scroll · zoom<br>
+  &#8592; &#8594; · browse cars
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────
+     Three.js import map  (same CDN version used in pink-loader.js)
+     ──────────────────────────────────────────────────────────── -->
+<script type="importmap">
+{
+  "imports": {
+    "three":          "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+    "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+/* ================================================================
+   NFT GARAGE VIEWER
+   ─ Mirrors the Three.js scaffold from pink-loader.js
+   ─ Tries  models/cars/<slug>.glb  first (your Blender exports)
+   ─ Falls back to a procedural stand-in car coloured per NFT
+   ================================================================ */
+
+import * as THREE             from 'three';
+import { OrbitControls }      from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader }         from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader }        from 'three/addons/loaders/DRACOLoader.js';
+import { EffectComposer }     from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }         from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass }    from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass }         from 'three/addons/postprocessing/OutputPass.js';
+
+// ── NFT Collection Definition ────────────────────────────────────
+// Each entry maps to  models/cars/<glb>  once you've run the
+// Blender → GLB export.  color/accent drive the procedural stand-in
+// (and the garage accent ring) until the real model is present.
+const COLLECTION = [
+  { id: 1,   name: 'Phantom #001',     tier: 'Legendary', color: 0xff006e, accent: 0xff69b4, glb: 'models/cars/phantom-001.glb'      },
+  { id: 42,  name: 'Specter #042',     tier: 'Epic',      color: 0x7b2fff, accent: 0xb980ff, glb: 'models/cars/specter-042.glb'      },
+  { id: 108, name: 'Ghost #108',       tier: 'Rare',      color: 0x00d4ff, accent: 0x80e8ff, glb: 'models/cars/ghost-108.glb'        },
+  { id: 217, name: 'Wraith #217',      tier: 'Rare',      color: 0x00ff9d, accent: 0x80ffce, glb: 'models/cars/wraith-217.glb'       },
+  { id: 333, name: 'Banshee #333',     tier: 'Uncommon',  color: 0xff6b00, accent: 0xffb880, glb: 'models/cars/banshee-333.glb'      },
+  { id: 512, name: 'Revenant #512',    tier: 'Common',    color: 0xffdd00, accent: 0xffee80, glb: 'models/cars/revenant-512.glb'     },
+  { id: 777, name: 'Poltergeist #777', tier: 'Epic',      color: 0xff2244, accent: 0xff8899, glb: 'models/cars/poltergeist-777.glb'  },
+  { id: 999, name: 'Specter #999',     tier: 'Legendary', color: 0xddeeff, accent: 0xaaccff, glb: 'models/cars/specter-999.glb'      },
+];
+
+const TIER_STYLE = {
+  Legendary: { bg: 'rgba(255,200,0,0.14)', fg: '#ffd700', border: 'rgba(255,200,0,0.55)' },
+  Epic:      { bg: 'rgba(148,0,255,0.14)', fg: '#c080ff', border: 'rgba(148,0,255,0.55)' },
+  Rare:      { bg: 'rgba(0,120,255,0.14)', fg: '#80b4ff', border: 'rgba(0,120,255,0.55)' },
+  Uncommon:  { bg: 'rgba(0,210,100,0.14)', fg: '#80ffce', border: 'rgba(0,210,100,0.55)' },
+  Common:    { bg: 'rgba(160,160,160,0.1)',fg: '#aaaaaa', border: 'rgba(160,160,160,0.4)' },
+};
+
+// ── Renderer (mirrors pink-loader.js bootstrap) ──────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// ── Scene ────────────────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x04000a);
+scene.fog = new THREE.FogExp2(0x04000a, 0.028);
+
+// ── Camera ───────────────────────────────────────────────────────
+const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 3.2, 10);
+
+// ── Controls ─────────────────────────────────────────────────────
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.9, 0);
+controls.enableDamping    = true;
+controls.dampingFactor    = 0.055;
+controls.minDistance      = 4.5;
+controls.maxDistance      = 22;
+controls.maxPolarAngle    = Math.PI / 2.05;
+controls.autoRotate       = true;
+controls.autoRotateSpeed  = 0.45;
+
+// ── Post-processing (bloom — same config as pink-loader.js) ──────
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(innerWidth, innerHeight),
+  0.65,   // strength
+  0.42,   // radius
+  0.18    // threshold
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ── Lighting ─────────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x110028, 0.9));
+
+const keyLight = new THREE.SpotLight(0xffffff, 90, 35, Math.PI / 4.5, 0.5, 2);
+keyLight.position.set(0, 14, 5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.bias = -0.001;
+scene.add(keyLight);
+scene.add(keyLight.target);
+
+const fillLight = new THREE.DirectionalLight(0x3322cc, 0.55);
+fillLight.position.set(-6, 8, -4);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xff006e, 0.9);
+rimLight.position.set(6, 3, -6);
+scene.add(rimLight);
+
+// ── Garage Environment ───────────────────────────────────────────
+function buildGarage () {
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshStandardMaterial({ color: 0x0d0016, roughness: 0.18, metalness: 0.55 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  const grid = new THREE.GridHelper(50, 50, 0x200030, 0x100020);
+  grid.position.y = 0.002;
+  scene.add(grid);
+
+  const plat = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.4, 2.4, 0.06, 72),
+    new THREE.MeshStandardMaterial({ color: 0x18082e, roughness: 0.22, metalness: 0.82 })
+  );
+  plat.position.y = 0.03;
+  plat.receiveShadow = true;
+  scene.add(plat);
+
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(2.4, 0.045, 8, 90),
+    new THREE.MeshStandardMaterial({
+      color: 0xff006e, emissive: 0xff006e,
+      emissiveIntensity: 2.2, roughness: 0.3
+    })
+  );
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.06;
+  ring.name = 'platformRing';
+  scene.add(ring);
+
+  const wall = new THREE.Mesh(
+    new THREE.PlaneGeometry(24, 12),
+    new THREE.MeshStandardMaterial({ color: 0x0b0014, roughness: 0.96 })
+  );
+  wall.position.set(0, 6, -10);
+  wall.receiveShadow = true;
+  scene.add(wall);
+
+  neonStrip(new THREE.Vector3(-3.5, 7, 0.5), new THREE.Vector3(3.5, 7, 0.5), 0xff006e);
+  neonStrip(new THREE.Vector3(-8, 7, -3),    new THREE.Vector3(-8, 7, 3),    0x7b2fff);
+  neonStrip(new THREE.Vector3( 8, 7, -3),    new THREE.Vector3( 8, 7, 3),    0x7b2fff);
+  neonStrip(new THREE.Vector3(-3.5, 7, -8),  new THREE.Vector3(3.5, 7, -8), 0x00d4ff);
+
+  [-8, 8].forEach(x => {
+    const pil = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 9, 0.28),
+      new THREE.MeshStandardMaterial({ color: 0x080010, roughness: 0.95 })
+    );
+    pil.position.set(x, 4.5, -2);
+    pil.castShadow = true;
+    scene.add(pil);
+  });
+}
+
+function neonStrip (from, to, hexColor) {
+  const dir = new THREE.Vector3().subVectors(to, from);
+  const len = dir.length();
+  const tube = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.032, 0.032, len, 6),
+    new THREE.MeshStandardMaterial({
+      color: hexColor, emissive: hexColor, emissiveIntensity: 3.5, roughness: 0.2
+    })
+  );
+  tube.position.copy(from).addScaledVector(dir, 0.5);
+  tube.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  scene.add(tube);
+
+  const pt = new THREE.PointLight(hexColor, 10, 12, 2);
+  pt.position.copy(tube.position);
+  scene.add(pt);
+}
+
+buildGarage();
+
+// ── Procedural Car (stand-in until .glb is present) ──────────────
+function buildProceduralCar (nft) {
+  const g     = new THREE.Group();
+  const c     = nft.color;
+  const ac    = nft.accent;
+
+  const bodyMat = new THREE.MeshStandardMaterial({ color: c,          roughness: 0.18, metalness: 0.88 });
+  const acMat   = new THREE.MeshStandardMaterial({ color: ac,         roughness: 0.14, metalness: 0.92 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x06060a,   roughness: 0.75, metalness: 0.2  });
+  const glassMat= new THREE.MeshPhysicalMaterial({ color: 0xaac8ff,   roughness: 0, metalness: 0,
+                    transmission: 0.88, thickness: 0.25, ior: 1.52,
+                    transparent: true, opacity: 0.32 });
+  const emit    = (col) => new THREE.MeshStandardMaterial({
+                    color: col, emissive: col, emissiveIntensity: 3.2, roughness: 0.25 });
+  const wheelM  = new THREE.MeshStandardMaterial({ color: 0x111114, roughness: 0.88, metalness: 0.1 });
+  const rimM    = new THREE.MeshStandardMaterial({ color: ac, roughness: 0.18, metalness: 0.92 });
+
+  add(g, new THREE.BoxGeometry(3.7, 0.52, 1.85), bodyMat, [0, 0.56, 0]);
+  add(g, new THREE.BoxGeometry(2.15, 0.72, 1.7),  bodyMat, [-0.18, 1.12, 0]);
+  add(g, new THREE.BoxGeometry(1.38, 0.11, 1.78), acMat,   [1.22, 0.88, 0]);
+  add(g, new THREE.BoxGeometry(0.85, 0.36, 1.78), bodyMat, [-1.72, 0.78, 0]);
+
+  const ws = flat(new THREE.PlaneGeometry(0.84, 0.7), glassMat, [0.93, 1.11, 0]);
+  ws.rotation.y = Math.PI / 2; ws.rotation.z = -0.28; g.add(ws);
+  const rw = flat(new THREE.PlaneGeometry(0.75, 0.62), glassMat, [-1.28, 1.11, 0]);
+  rw.rotation.y = Math.PI / 2; rw.rotation.z = 0.32; g.add(rw);
+  [-1, 1].forEach(s => {
+    const sw = flat(new THREE.PlaneGeometry(1.55, 0.54), glassMat, [-0.12, 1.12, s * 0.86]);
+    sw.rotation.y = (s > 0 ? 0 : Math.PI); g.add(sw);
+  });
+
+  [-1, 1].forEach(s => add(g, new THREE.BoxGeometry(3.5, 0.07, 0.06), emit(ac), [-0.1, 0.34, s * 0.96]));
+
+  add(g, new THREE.BoxGeometry(0.07, 0.42, 1.65), acMat,   [-1.73, 0.97, 0]);
+  add(g, new THREE.BoxGeometry(0.54, 0.07, 1.85), bodyMat, [-1.73, 1.19, 0]);
+
+  add(g, new THREE.BoxGeometry(0.11, 0.32, 1.82), acMat,   [ 1.87, 0.42, 0]);
+  add(g, new THREE.BoxGeometry(0.11, 0.32, 1.82), darkMat, [-1.87, 0.42, 0]);
+
+  [-1, 1].forEach(s => {
+    add(g, new THREE.BoxGeometry(0.04, 0.13, 0.36), emit(0xffffff), [1.88, 0.63, s * 0.60]);
+    add(g, new THREE.BoxGeometry(0.04, 0.04, 0.62), emit(ac),       [1.88, 0.50, s * 0.50]);
+  });
+  [-1, 1].forEach(s => {
+    add(g, new THREE.BoxGeometry(0.04, 0.13, 0.36), emit(0xff1111), [-1.88, 0.63, s * 0.60]);
+  });
+  add(g, new THREE.BoxGeometry(0.04, 0.04, 1.35), emit(ac), [-1.88, 0.50, 0]);
+
+  [[ 1.18, 0.31,  1.03], [ 1.18, 0.31, -1.03],
+   [-1.18, 0.31,  1.03], [-1.18, 0.31, -1.03]].forEach(([x, y, z]) => {
+    const wg = new THREE.Group();
+    wg.position.set(x, y, z);
+    const tyre = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.135, 12, 36), wheelM);
+    tyre.rotation.y = Math.PI / 2; tyre.castShadow = true;
+    wg.add(tyre);
+    wg.add(makeMesh(new THREE.CylinderGeometry(0.19, 0.19, 0.07, 22), rimM,
+      [0, 0, 0], [Math.PI/2, 0, 0]));
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      const sp = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.22), rimM);
+      sp.position.set(0, Math.sin(a) * 0.11, Math.cos(a) * 0.11);
+      sp.rotation.x = -a;
+      wg.add(sp);
+    }
+    wg.castShadow = true;
+    g.add(wg);
+  });
+
+  const glow = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.1, 1.55),
+    new THREE.MeshStandardMaterial({
+      color: ac, emissive: ac, emissiveIntensity: 0.9,
+      transparent: true, opacity: 0.22, side: THREE.DoubleSide
+    })
+  );
+  glow.rotation.x = -Math.PI / 2;
+  glow.position.y = 0.13;
+  g.add(glow);
+
+  const underPt = new THREE.PointLight(ac, 4, 5, 2);
+  underPt.position.set(0, 0.15, 0);
+  g.add(underPt);
+
+  g.position.y = 0.07;
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; } });
+  return g;
+}
+
+function add (parent, geo, mat, pos) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(...pos);
+  m.castShadow = true; parent.add(m); return m;
+}
+function flat (geo, mat, pos) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(...pos); return m;
+}
+function makeMesh (geo, mat, pos, rot) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(...pos);
+  if (rot) m.rotation.set(...rot);
+  return m;
+}
+
+// ── GLTFLoader (with Draco) ───────────────────────────────────────
+const gltfLoader = new GLTFLoader();
+const draco      = new DRACOLoader();
+draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+gltfLoader.setDRACOLoader(draco);
+
+async function loadCarModel (nft) {
+  return new Promise(resolve => {
+    gltfLoader.load(
+      nft.glb,
+      gltf => {
+        const model = gltf.scene;
+        const box  = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const scale = 3.6 / Math.max(size.x, size.y, size.z);
+        model.scale.setScalar(scale);
+        const ctr = box.getCenter(new THREE.Vector3());
+        model.position.sub(ctr.multiplyScalar(scale));
+        model.position.y += 0.07;
+        model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; } });
+        resolve({ mesh: model, isReal: true });
+      },
+      undefined,
+      () => resolve({ mesh: buildProceduralCar(nft), isReal: false })
+    );
+  });
+}
+
+let idx         = 0;
+let activeCar   = null;
+let transitioning = false;
+
+function updateInfo (nft, isReal) {
+  document.getElementById('ci-name').textContent = nft.name;
+  const ts = TIER_STYLE[nft.tier] || TIER_STYLE.Common;
+  const badge = document.getElementById('ci-badge');
+  badge.textContent = nft.tier;
+  badge.style.background  = ts.bg;
+  badge.style.color       = ts.fg;
+  badge.style.borderColor = ts.border;
+  document.getElementById('ci-id').textContent   = `Token #${nft.id}`;
+  document.getElementById('ci-source').textContent = isReal ? 'REAL GLB' : 'PROCEDURAL';
+  document.getElementById('car-tag-dot').style.background = isReal ? '#00ff9d' : '#ffd700';
+
+  const ringObj = scene.getObjectByName('platformRing');
+  if (ringObj) {
+    ringObj.material.color.setHex(nft.color);
+    ringObj.material.emissive.setHex(nft.color);
+  }
+  document.getElementById('car-info').style.borderColor = `#${nft.color.toString(16).padStart(6,'0')}66`;
+
+  const chip = document.getElementById('glb-status');
+  chip.textContent  = isReal ? '✓ REAL GLB LOADED' : '⚡ PROCEDURAL MODEL';
+  chip.className    = `show ${isReal ? 'real' : 'fallback'}`;
+}
+
+function updateDots (i) {
+  document.querySelectorAll('.dot').forEach((d, j) => d.classList.toggle('active', j === i));
+}
+
+function lerp (a, b, t) { return a + (b - a) * t; }
+function easeOut3 (t)   { return 1 - Math.pow(1 - t, 3); }
+function easeInOut2 (t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+function slideOut (obj, dir) {
+  return new Promise(resolve => {
+    const sx = obj.position.x, tx = -dir * 9;
+    const t0 = performance.now(), dur = 380;
+    const tick = now => {
+      const p = Math.min((now - t0) / dur, 1);
+      obj.position.x = lerp(sx, tx, easeInOut2(p));
+      p < 1 ? requestAnimationFrame(tick) : resolve();
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+function slideIn (obj, dir) {
+  return new Promise(resolve => {
+    obj.position.x = dir * 9;
+    const t0 = performance.now(), dur = 480;
+    const tick = now => {
+      const p = Math.min((now - t0) / dur, 1);
+      obj.position.x = lerp(dir * 9, 0, easeOut3(p));
+      p < 1 ? requestAnimationFrame(tick) : resolve();
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+async function showCar (newIdx, dir = 1) {
+  if (transitioning) return;
+  transitioning = true;
+  idx = ((newIdx % COLLECTION.length) + COLLECTION.length) % COLLECTION.length;
+  updateDots(idx);
+
+  const nft = COLLECTION[idx];
+  const old = activeCar;
+  const pending = loadCarModel(nft);
+
+  if (old) {
+    await slideOut(old, dir);
+    scene.remove(old);
+  }
+
+  const { mesh, isReal } = await pending;
+  activeCar = mesh;
+  scene.add(mesh);
+  await slideIn(mesh, dir);
+
+  updateInfo(nft, isReal);
+  transitioning = false;
+}
+
+const dotsEl = document.getElementById('dots');
+COLLECTION.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => showCar(i, i > idx ? 1 : -1));
+  dotsEl.appendChild(d);
+});
+
+document.getElementById('prev-btn').addEventListener('click', () => showCar(idx - 1, -1));
+document.getElementById('next-btn').addEventListener('click', () => showCar(idx + 1,  1));
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  document.getElementById('prev-btn').click();
+  if (e.key === 'ArrowRight') document.getElementById('next-btn').click();
+});
+
+const ldBar = document.getElementById('ld-bar');
+const ldEl  = document.getElementById('loading');
+
+ldBar.style.width = '25%';
+await new Promise(r => setTimeout(r, 200));
+ldBar.style.width = '65%';
+await showCar(0);
+ldBar.style.width = '100%';
+await new Promise(r => setTimeout(r, 250));
+ldEl.style.opacity = '0';
+await new Promise(r => setTimeout(r, 650));
+ldEl.style.display = 'none';
+
+const clock = new THREE.Clock();
+
+(function animate () {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  const t  = clock.getElapsedTime();
+
+  controls.update();
+
+  if (activeCar) activeCar.rotation.y += dt * 0.38;
+
+  const ring = scene.getObjectByName('platformRing');
+  if (ring) ring.material.emissiveIntensity = 1.8 + Math.sin(t * 2.4) * 0.55;
+
+  composer.render();
+})();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

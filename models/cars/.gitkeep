@@ -1,0 +1,15 @@
+# Drop your Blender-exported .glb files here.
+# Expected filenames (matching COLLECTION in garage.html):
+#
+#   phantom-001.glb
+#   specter-042.glb
+#   ghost-108.glb
+#   wraith-217.glb
+#   banshee-333.glb
+#   revenant-512.glb
+#   poltergeist-777.glb
+#   specter-999.glb
+#
+# When a .glb is present the viewer loads it automatically.
+# When it is missing the viewer falls back to the procedural
+# stand-in car coloured with that NFT's color/accent values.
