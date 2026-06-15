@@ -1,0 +1,17 @@
+{
+  "name": "Specter #042",
+  "description": "An epic phantom of the drag strip. Balanced speed and handling.",
+  "image": "https://metadata.neondrive.io/images/cars/specter.png",
+  "animation_url": "https://metadata.neondrive.io/models/cars/specter-042.glb",
+  "external_url": "https://neondrive.io/garage/2",
+  "attributes": [
+    {"trait_type": "Speed", "value": 82, "max_value": 100},
+    {"trait_type": "Handling", "value": 85, "max_value": 100},
+    {"trait_type": "Acceleration", "value": 88, "max_value": 100},
+    {"trait_type": "Durability", "value": 80, "max_value": 100},
+    {"trait_type": "Boost", "value": 78, "max_value": 100},
+    {"trait_type": "Rarity", "value": "Epic"},
+    {"trait_type": "Rarity Score", "value": 3, "display_type": "number"},
+    {"trait_type": "Model", "value": "Specter"}
+  ]
+}

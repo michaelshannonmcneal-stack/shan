@@ -1,0 +1,11 @@
+{
+  "name": "Turbo Mk5",
+  "description": "Tier 5 turbo upgrade. Adds +20 Boost.",
+  "image": "https://metadata.neondrive.io/images/parts/turbo-5.png",
+  "attributes": [
+    {"trait_type": "Upgrade Type", "value": "Turbo"},
+    {"trait_type": "Stat", "value": "Boost"},
+    {"trait_type": "Boost", "value": 20, "display_type": "boost_number"},
+    {"trait_type": "Tier", "value": "Mk5"}
+  ]
+}

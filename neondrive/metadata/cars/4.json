@@ -1,0 +1,17 @@
+{
+  "name": "Wraith #217",
+  "description": "Nimble and precise. A rare choice for circuit specialists.",
+  "image": "https://metadata.neondrive.io/images/cars/wraith.png",
+  "animation_url": "https://metadata.neondrive.io/models/cars/wraith-217.glb",
+  "external_url": "https://neondrive.io/garage/4",
+  "attributes": [
+    {"trait_type": "Speed", "value": 70, "max_value": 100},
+    {"trait_type": "Handling", "value": 78, "max_value": 100},
+    {"trait_type": "Acceleration", "value": 72, "max_value": 100},
+    {"trait_type": "Durability", "value": 75, "max_value": 100},
+    {"trait_type": "Boost", "value": 73, "max_value": 100},
+    {"trait_type": "Rarity", "value": "Rare"},
+    {"trait_type": "Rarity Score", "value": 2, "display_type": "number"},
+    {"trait_type": "Model", "value": "Wraith"}
+  ]
+}

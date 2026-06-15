@@ -1,0 +1,11 @@
+{
+  "name": "Armor Mk2",
+  "description": "Tier 2 armor upgrade. Adds +8 Durability.",
+  "image": "https://metadata.neondrive.io/images/parts/armor-2.png",
+  "attributes": [
+    {"trait_type": "Upgrade Type", "value": "Armor"},
+    {"trait_type": "Stat", "value": "Durability"},
+    {"trait_type": "Boost", "value": 8, "display_type": "boost_number"},
+    {"trait_type": "Tier", "value": "Mk2"}
+  ]
+}

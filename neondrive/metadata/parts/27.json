@@ -1,0 +1,11 @@
+{
+  "name": "Aero Kit",
+  "description": "Full aerodynamic body package. Major handling improvement.",
+  "image": "https://metadata.neondrive.io/images/parts/aero-kit.png",
+  "attributes": [
+    {"trait_type": "Upgrade Type", "value": "Aero Kit"},
+    {"trait_type": "Stat", "value": "Handling"},
+    {"trait_type": "Boost", "value": 15, "display_type": "boost_number"},
+    {"trait_type": "Tier", "value": "Special"}
+  ]
+}

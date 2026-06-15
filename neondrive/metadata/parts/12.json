@@ -1,0 +1,11 @@
+{
+  "name": "NOS Mk2",
+  "description": "Tier 2 nos upgrade. Adds +8 Acceleration.",
+  "image": "https://metadata.neondrive.io/images/parts/nos-2.png",
+  "attributes": [
+    {"trait_type": "Upgrade Type", "value": "NOS"},
+    {"trait_type": "Stat", "value": "Acceleration"},
+    {"trait_type": "Boost", "value": 8, "display_type": "boost_number"},
+    {"trait_type": "Tier", "value": "Mk2"}
+  ]
+}
