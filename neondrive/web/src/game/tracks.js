@@ -1,0 +1,138 @@
+/**
+ * tracks.js — All 8 race track configurations (4 cities × 2 modes).
+ */
+
+export const TRACKS = [
+  {
+    id: "miami-drag", city: "Miami", mode: "drag",
+    name: "Miami Beach Strip",
+    description: "Neon-soaked beachfront straight. Rain slicks the tarmac.",
+    distance: 402, laps: 1,
+    weather: "night-rain",
+    bgColor: "#001a2e", accentColor: "#00d4ff",
+    skillEvents: [
+      { t: 0.05, type: "launch", prompt: "LAUNCH!", perfectWindow: 110 },
+      { t: 0.35, type: "shift",  prompt: "SHIFT!",  perfectWindow:  85 },
+      { t: 0.62, type: "shift",  prompt: "SHIFT!",  perfectWindow:  80 },
+      { t: 0.82, type: "nos",    prompt: "NOS!",    perfectWindow: 120 },
+    ],
+    statWeights: { speed: 0.40, acceleration: 0.35, boost: 0.15, handling: 0.05, durability: 0.05 },
+  },
+  {
+    id: "miami-circuit", city: "Miami", mode: "circuit",
+    name: "South Beach Circuit",
+    description: "3-lap circuit through the art deco district.",
+    distance: null, laps: 3,
+    weather: "night",
+    bgColor: "#001520", accentColor: "#00d4ff",
+    skillEvents: [
+      { t: 0.10, type: "turn",  prompt: "TURN!",  perfectWindow:  90 },
+      { t: 0.25, type: "brake", prompt: "BRAKE!", perfectWindow:  80 },
+      { t: 0.45, type: "turn",  prompt: "TURN!",  perfectWindow:  88 },
+      { t: 0.62, type: "nos",   prompt: "NOS!",   perfectWindow: 120 },
+      { t: 0.80, type: "turn",  prompt: "TURN!",  perfectWindow:  90 },
+    ],
+    statWeights: { handling: 0.35, speed: 0.25, acceleration: 0.20, boost: 0.10, durability: 0.10 },
+  },
+  {
+    id: "vegas-drag", city: "Vegas", mode: "drag",
+    name: "The Strip Dash",
+    description: "A golden mile down Las Vegas Boulevard.",
+    distance: 402, laps: 1,
+    weather: "clear",
+    bgColor: "#1a0a00", accentColor: "#ffdd00",
+    skillEvents: [
+      { t: 0.05, type: "launch", prompt: "LAUNCH!", perfectWindow: 110 },
+      { t: 0.30, type: "shift",  prompt: "SHIFT!",  perfectWindow:  88 },
+      { t: 0.56, type: "shift",  prompt: "SHIFT!",  perfectWindow:  82 },
+      { t: 0.80, type: "nos",    prompt: "NOS!",    perfectWindow: 115 },
+    ],
+    statWeights: { speed: 0.45, acceleration: 0.30, boost: 0.15, handling: 0.05, durability: 0.05 },
+  },
+  {
+    id: "vegas-circuit", city: "Vegas", mode: "circuit",
+    name: "Casino Row Loop",
+    description: "Tight streets around the casino district.",
+    distance: null, laps: 3,
+    weather: "night",
+    bgColor: "#100800", accentColor: "#ffdd00",
+    skillEvents: [
+      { t: 0.08, type: "turn",  prompt: "TURN!",  perfectWindow:  85 },
+      { t: 0.22, type: "brake", prompt: "BRAKE!", perfectWindow:  76 },
+      { t: 0.40, type: "turn",  prompt: "TURN!",  perfectWindow:  85 },
+      { t: 0.56, type: "nos",   prompt: "NOS!",   perfectWindow: 120 },
+      { t: 0.72, type: "turn",  prompt: "TURN!",  perfectWindow:  85 },
+      { t: 0.88, type: "brake", prompt: "BRAKE!", perfectWindow:  76 },
+    ],
+    statWeights: { handling: 0.40, speed: 0.20, acceleration: 0.20, boost: 0.10, durability: 0.10 },
+  },
+  {
+    id: "nyc-drag", city: "NYC", mode: "drag",
+    name: "Brooklyn Bridge Sprint",
+    description: "A foggy blast across the iconic bridge.",
+    distance: 400, laps: 1,
+    weather: "fog",
+    bgColor: "#0a0a14", accentColor: "#7b2fff",
+    skillEvents: [
+      { t: 0.05, type: "launch", prompt: "LAUNCH!", perfectWindow: 105 },
+      { t: 0.32, type: "shift",  prompt: "SHIFT!",  perfectWindow:  82 },
+      { t: 0.58, type: "shift",  prompt: "SHIFT!",  perfectWindow:  80 },
+      { t: 0.82, type: "nos",    prompt: "NOS!",    perfectWindow: 110 },
+    ],
+    statWeights: { speed: 0.40, acceleration: 0.30, boost: 0.20, handling: 0.05, durability: 0.05 },
+  },
+  {
+    id: "nyc-circuit", city: "NYC", mode: "circuit",
+    name: "Manhattan Grid",
+    description: "Grid-pattern streets, tight 90° corners.",
+    distance: null, laps: 3,
+    weather: "night",
+    bgColor: "#08080f", accentColor: "#7b2fff",
+    skillEvents: [
+      { t: 0.10, type: "turn",  prompt: "TURN!",  perfectWindow: 82 },
+      { t: 0.22, type: "turn",  prompt: "TURN!",  perfectWindow: 82 },
+      { t: 0.36, type: "brake", prompt: "BRAKE!", perfectWindow: 72 },
+      { t: 0.50, type: "turn",  prompt: "TURN!",  perfectWindow: 82 },
+      { t: 0.65, type: "nos",   prompt: "NOS!",   perfectWindow: 120 },
+      { t: 0.80, type: "turn",  prompt: "TURN!",  perfectWindow: 82 },
+      { t: 0.90, type: "turn",  prompt: "TURN!",  perfectWindow: 82 },
+    ],
+    statWeights: { handling: 0.45, speed: 0.20, acceleration: 0.15, boost: 0.10, durability: 0.10 },
+  },
+  {
+    id: "la-drag", city: "LA", mode: "drag",
+    name: "Sunset Straight",
+    description: "Golden hour on the world-famous boulevard.",
+    distance: 402, laps: 1,
+    weather: "dusk",
+    bgColor: "#160008", accentColor: "#ff6b00",
+    skillEvents: [
+      { t: 0.05, type: "launch", prompt: "LAUNCH!", perfectWindow: 115 },
+      { t: 0.30, type: "shift",  prompt: "SHIFT!",  perfectWindow:  88 },
+      { t: 0.58, type: "shift",  prompt: "SHIFT!",  perfectWindow:  84 },
+      { t: 0.80, type: "nos",    prompt: "NOS!",    perfectWindow: 118 },
+    ],
+    statWeights: { speed: 0.40, acceleration: 0.30, boost: 0.20, handling: 0.05, durability: 0.05 },
+  },
+  {
+    id: "la-circuit", city: "LA", mode: "circuit",
+    name: "Hollywood Hills",
+    description: "Winding canyon roads above the city lights.",
+    distance: null, laps: 3,
+    weather: "night",
+    bgColor: "#0f0010", accentColor: "#ff6b00",
+    skillEvents: [
+      { t: 0.10, type: "turn",  prompt: "TURN!",  perfectWindow: 90 },
+      { t: 0.22, type: "brake", prompt: "BRAKE!", perfectWindow: 80 },
+      { t: 0.36, type: "turn",  prompt: "TURN!",  perfectWindow: 88 },
+      { t: 0.52, type: "nos",   prompt: "NOS!",   perfectWindow: 120 },
+      { t: 0.65, type: "turn",  prompt: "TURN!",  perfectWindow: 86 },
+      { t: 0.80, type: "brake", prompt: "BRAKE!", perfectWindow: 78 },
+    ],
+    statWeights: { handling: 0.38, speed: 0.22, acceleration: 0.20, boost: 0.10, durability: 0.10 },
+  },
+];
+
+export const getTrack  = id   => TRACKS.find(t => t.id === id);
+export const getByCity = city => TRACKS.filter(t => t.city === city);
+export const CITIES    = ["Miami", "Vegas", "NYC", "LA"];
