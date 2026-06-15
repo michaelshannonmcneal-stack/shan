@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# Environment — NEVER commit keys
+.env
+.env.local
+.env.*.local
+contracts/.env
+resolver/.env
+
+# Deployed addresses (generated, not committed — re-run deploy to regenerate)
+contracts/deployed-*.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Three.js build artefacts
+web/dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Gas report output
+gas-report.txt

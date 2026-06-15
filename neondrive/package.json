@@ -1,0 +1,17 @@
+{
+  "name": "neondrive",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["contracts", "web", "resolver"],
+  "scripts": {
+    "dev":        "npm run dev --workspace=web",
+    "build":      "npm run build --workspace=web",
+    "test":       "npm run test --workspace=contracts",
+    "test:gas":   "npm run test:gas --workspace=contracts",
+    "compile":    "npm run compile --workspace=contracts",
+    "deploy:fuji":"npm run deploy:fuji --workspace=contracts",
+    "seed:fuji":  "npm run seed:fuji --workspace=contracts",
+    "resolver":   "node resolver/index.js",
+    "metadata":   "python3 tools/generate_metadata.py"
+  }
+}

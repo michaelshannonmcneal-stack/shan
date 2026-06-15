@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PINKS — NeonDrive</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pink: #ff006e; --cyan: #00d4ff; --purple: #7b2fff;
+      --green: #00ff9d; --gold: #ffdd00;
+      --bg: #04000a; --bg2: #08001a; --card: #0d0020;
+      --border: rgba(255,0,110,.25); --text: #e8d5ff;
+      --muted: #7755aa; --font: "Courier New", monospace;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 52px; background: rgba(4,0,10,.92);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0; padding: 0 16px;
+    }
+    #logo { font-size: 20px; font-weight: bold; letter-spacing: 4px; color: var(--pink); text-shadow: 0 0 12px var(--pink); margin-right: 24px; }
+    .tab { padding: 0 18px; height: 52px; line-height: 52px; cursor: pointer; font-family: var(--font); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border: none; background: transparent; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--pink); border-bottom-color: var(--pink); }
+    #wallet-area { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #wallet-status { font-size: 11px; color: var(--muted); }
+    #wallet-status.connected { color: var(--green); }
+    .btn { padding: 7px 16px; border: 1px solid currentColor; background: transparent; color: var(--pink); font-family: var(--font); font-size: 12px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; transition: background .15s; }
+    .btn:hover { background: rgba(255,0,110,.15); }
+    .btn.cyan { color: var(--cyan); } .btn.cyan:hover { background: rgba(0,212,255,.12); }
+    .btn.green { color: var(--green); } .btn.green:hover { background: rgba(0,255,157,.12); }
+    .btn.gold { color: var(--gold); } .btn.gold:hover { background: rgba(255,221,0,.12); }
+    .btn.sm { padding: 4px 10px; font-size: 11px; }
+    .btn:disabled { opacity: .4; cursor: default; }
+    #app { padding-top: 52px; min-height: 100vh; }
+    .view { display: none; padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
+    .view.active { display: block; }
+    #race-view.active { display: flex; }
+    .section-title { font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .nft-card { background: var(--card); border: 1px solid var(--border); padding: 0; cursor: pointer; transition: border-color .2s, transform .15s; position: relative; overflow: hidden; }
+    .nft-card:hover { border-color: var(--pink); transform: translateY(-2px); }
+    .nft-card.selected { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,212,255,.3); }
+    .nft-card canvas { display: block; width: 100%; height: 150px; }
+    .nft-card-body { padding: 12px; }
+    .nft-name { font-size: 14px; color: var(--text); margin-bottom: 6px; }
+    .nft-rarity { font-size: 10px; letter-spacing: 2px; }
+    .stat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .stat-pill { font-size: 10px; padding: 2px 8px; background: rgba(255,0,110,.1); border: 1px solid rgba(255,0,110,.3); color: var(--pink); }
+    #viewer-overlay { display: none; position: fixed; inset: 52px 0 0 0; z-index: 80; background: var(--bg); flex-direction: column; }
+    #viewer-overlay.open { display: flex; }
+    #viewer-canvas { flex: 1; display: block; width: 100%; }
+    #viewer-bar { height: 56px; background: rgba(4,0,10,.95); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+    #viewer-car-name { font-size: 16px; color: var(--cyan); letter-spacing: 3px; }
+    .part-chip { font-size: 10px; padding: 3px 10px; border: 1px solid rgba(123,47,255,.5); color: var(--purple); }
+    .upgrade-card { background: var(--card); border: 1px solid var(--border); padding: 14px; transition: border-color .2s; }
+    .upgrade-card:hover { border-color: var(--purple); }
+    .listing-card { background: var(--card); border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .listing-price { font-size: 18px; color: var(--gold); }
+    #race-view { display: none; flex-direction: column; gap: 20px; }
+    .race-panel { background: var(--card); border: 1px solid var(--border); padding: 20px; }
+    .track-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    .track-card { padding: 14px; border: 1px solid var(--border); cursor: pointer; transition: border-color .2s; background: rgba(0,0,0,.3); }
+    .track-card:hover { border-color: var(--cyan); }
+    .track-card.selected { border-color: var(--cyan); background: rgba(0,212,255,.06); }
+    .track-name { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .track-city { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    #race-arena { display: none; position: fixed; inset: 0; z-index: 200; flex-direction: column; align-items: center; justify-content: center; background: rgba(4,0,10,.97); }
+    #race-arena.open { display: flex; }
+    #event-prompt { font-size: 48px; font-weight: bold; letter-spacing: 8px; color: var(--pink); text-shadow: 0 0 30px var(--pink); min-height: 70px; text-align: center; }
+    #timing-bar-wrap { width: 500px; height: 24px; background: rgba(255,255,255,.06); border: 1px solid var(--border); margin: 24px 0; position: relative; overflow: hidden; }
+    #timing-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cyan); transition: width .016s linear; }
+    #timing-bar-perfect { position: absolute; top: 0; bottom: 0; background: rgba(0,255,157,.35); border: 1px solid var(--green); }
+    #timing-bar-good { position: absolute; top: 0; bottom: 0; background: rgba(0,212,255,.18); border: 1px solid var(--cyan); }
+    #timing-feedback { font-size: 24px; letter-spacing: 4px; min-height: 36px; text-align: center; }
+    #timing-feedback.perfect { color: var(--green); text-shadow: 0 0 20px var(--green); }
+    #timing-feedback.good { color: var(--cyan); text-shadow: 0 0 15px var(--cyan); }
+    #timing-feedback.miss { color: #ff3333; }
+    #arena-progress { font-size: 12px; color: var(--muted); letter-spacing: 2px; }
+    #press-hint { font-size: 14px; color: var(--muted); margin-top: 30px; letter-spacing: 2px; }
+    #race-result { display: none; position: fixed; inset: 0; z-index: 210; flex-direction: column; align-items: center; justify-content: center; background: rgba(4,0,10,.97); }
+    #race-result.open { display: flex; }
+    #result-banner { font-size: 64px; font-weight: bold; letter-spacing: 10px; margin-bottom: 20px; }
+    #result-banner.win { color: var(--green); text-shadow: 0 0 40px var(--green); }
+    #result-banner.lose { color: #ff3333; text-shadow: 0 0 40px #ff3333; }
+    #result-details { font-size: 13px; color: var(--muted); line-height: 2; text-align: center; }
+    #result-details span { color: var(--text); }
+    #toast { position: fixed; bottom: 24px; right: 24px; z-index: 500; padding: 12px 20px; background: var(--card); border: 1px solid var(--pink); font-size: 13px; color: var(--text); transform: translateY(100px); opacity: 0; transition: all .3s; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,0,110,.3); border-top-color: var(--pink); border-radius: 50%; animation: spin .6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .flex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+  </style>
+</head>
+<body>
+<div id="topbar">
+  <div id="logo">PINKS</div>
+  <button class="tab active" data-view="garage">Garage</button>
+  <button class="tab" data-view="shop">Shop</button>
+  <button class="tab" data-view="market">Market</button>
+  <button class="tab" data-view="race">Race</button>
+  <div id="wallet-area">
+    <span id="wallet-status">[ OFFLINE — MOCK MODE ]</span>
+    <button class="btn cyan" id="btn-connect">Connect Wallet</button>
+    <button class="btn sm" id="btn-mint" style="display:none">Mint 0.5Ξ</button>
+  </div>
+</div>
+<div id="app">
+  <section id="garage-view" class="view active">
+    <p class="section-title">Your Fleet</p>
+    <div id="car-grid" class="grid"><div style="color:var(--muted);font-size:13px">Loading fleet...</div></div>
+  </section>
+  <section id="shop-view" class="view">
+    <p class="section-title">Upgrade Shop</p>
+    <div class="flex-row" style="margin-bottom:16px">
+      <span style="font-size:12px;color:var(--muted)">Select a car to equip parts:</span>
+      <select id="shop-car-select" style="background:var(--card);color:var(--text);border:1px solid var(--border);padding:5px 10px;font-family:var(--font)"><option value="">— choose car —</option></select>
+    </div>
+    <div id="upgrade-grid" class="grid"><div style="color:var(--muted);font-size:13px">Loading upgrades...</div></div>
+  </section>
+  <section id="market-view" class="view">
+    <p class="section-title">Marketplace</p>
+    <div class="flex-row" style="margin-bottom:16px"><button class="btn gold" id="btn-list-car">List My Car</button></div>
+    <div id="listing-grid" class="grid"><div style="color:var(--muted);font-size:13px">Loading listings...</div></div>
+  </section>
+  <section id="race-view" class="view">
+    <div class="race-panel">
+      <p class="section-title">Select Track</p>
+      <div class="track-grid" id="track-grid"></div>
+    </div>
+    <div class="race-panel">
+      <p class="section-title">Select Car</p>
+      <div id="race-car-grid" class="grid"></div>
+    </div>
+    <div class="race-panel" id="race-wager-panel" style="display:none">
+      <p class="section-title">Wager (AVAX)</p>
+      <div class="flex-row">
+        <input id="wager-input" type="number" min="0.01" step="0.01" value="0.1" style="background:var(--card);color:var(--text);border:1px solid var(--border);padding:7px 12px;width:120px;font-family:var(--font)" />
+        <button class="btn green" id="btn-start-race" disabled>Start Race</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="viewer-overlay">
+  <canvas id="viewer-canvas"></canvas>
+  <div id="viewer-bar">
+    <button class="btn sm" id="btn-viewer-close">✕ Close</button>
+    <span id="viewer-car-name">—</span>
+    <div id="viewer-parts"></div>
+    <div class="spacer"></div>
+    <button class="btn sm cyan" id="btn-viewer-race">Race This Car</button>
+  </div>
+</div>
+<div id="race-arena">
+  <div id="arena-progress">EVENT 0 / 0</div>
+  <div id="event-prompt"></div>
+  <div id="timing-bar-wrap">
+    <div id="timing-bar-perfect"></div>
+    <div id="timing-bar-good"></div>
+    <div id="timing-bar-fill"></div>
+  </div>
+  <div id="timing-feedback"></div>
+  <div id="press-hint">PRESS  SPACE  OR  TAP</div>
+</div>
+<div id="race-result">
+  <div id="result-banner">WIN!</div>
+  <div id="result-details"></div>
+  <div style="margin-top:30px;display:flex;gap:16px">
+    <button class="btn green" id="btn-result-again">Race Again</button>
+    <button class="btn" id="btn-result-garage">Return to Garage</button>
+  </div>
+</div>
+<div id="toast"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
